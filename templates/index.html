@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QuakeOdds: earthquake chances for any place</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>〰️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="masthead">
+    <p class="brand">QuakeOdds</p>
+    <h1>How likely is an earthquake here?</h1>
+    <p class="lede">Search any place on Earth. We pull its last {{ years }} years of recorded earthquakes from the USGS live catalog and estimate the chances ahead.</p>
+
+    <form id="search-form" class="search" autocomplete="off" novalidate>
+      <div class="combo">
+        <label for="place-input" class="visually-hidden">Place</label>
+        <input id="place-input" type="text" placeholder="Try Tokyo, Anchorage, or your street"
+               role="combobox" aria-autocomplete="list" aria-expanded="false"
+               aria-controls="suggestions" spellcheck="false">
+        <ul id="suggestions" class="suggestions" role="listbox" hidden></ul>
+      </div>
+      <label class="radius">
+        <span>within</span>
+        <select id="radius-select" aria-label="Search radius">
+          {% for r in radii %}<option value="{{ r }}" {% if r == default_radius %}selected{% endif %}>{{ r }} km</option>{% endfor %}
+        </select>
+      </label>
+      <button type="submit" id="check-btn">Check odds</button>
+      <button type="button" id="locate-btn" class="link-btn">Use my location</button>
+    </form>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+  </header>
+
+  <section class="drum" aria-label="Seismogram of recent earthquakes">
+    <svg id="seismogram" preserveAspectRatio="none" role="img" aria-label="Idle seismogram trace"></svg>
+    <div class="drum-axis"><span id="axis-start">30 days ago</span><span id="axis-end">now</span></div>
+  </section>
+
+  <main id="report" class="report" hidden>
+   <div class="col">
+    <section class="verdict">
+      <p class="place"><span id="place-name"></span> <span id="place-detail"></span></p>
+      <h2 id="risk-level"></h2>
+      <p id="risk-summary" class="risk-summary"></p>
+    </section>
+
+    <section class="matrix-wrap">
+      <h3>Chance of at least one earthquake within <span id="radius-label"></span></h3>
+      <div class="scroll-x"><table id="matrix" class="matrix"></table></div>
+      <p class="hint">Each cell is the chance of one or more quakes at or above that magnitude in that time span. M5 can crack walls; M6 and up can be destructive near the epicenter.</p>
+    </section>
+
+    <section class="method">
+      <h3>How this was worked out</h3>
+      <dl id="model-facts" class="facts"></dl>
+      <ul id="notes" class="notes"></ul>
+      <p class="fine">This is a statistical estimate from past activity (Gutenberg–Richter magnitude law with a Poisson time model), not an official forecast. Nobody can predict the day or hour of an earthquake. For official hazard maps, see your national geological survey.</p>
+    </section>
+   </div>
+   <aside class="col">
+    <section class="map-wrap">
+      <div id="map" class="map" aria-label="Map of recent earthquakes"></div>
+    </section>
+
+    <section class="recent">
+      <h3>Last 30 days, live from USGS</h3>
+      <ol id="recent-list" class="recent-list"></ol>
+    </section>
+
+   </aside>
+  </main>
+
+  <footer class="foot">
+    Data: <a href="https://earthquake.usgs.gov/fdsnws/event/1/" rel="noopener">USGS Earthquake Catalog</a>, place search by <a href="https://photon.komoot.io" rel="noopener">Photon</a> and <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a>.
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
